@@ -10,6 +10,7 @@
 
 import numpy as np
 import pickle
+from copy import deepcopy
 
 BOARD_ROWS = 3
 BOARD_COLS = 3
@@ -213,7 +214,8 @@ class Player:
 
         for i in reversed(range(len(self.states) - 1)):
             state = self.states[i]
-            td_error = self.greedy[i] * (self.estimations[self.states[i + 1]] - self.estimations[state])
+            td_error = (self.estimations[self.states[i + 1]] - self.estimations[state])
+            # td_error = self.greedy[i] * (self.estimations[self.states[i + 1]] - self.estimations[state])
             self.estimations[state] += self.step_size * td_error
 
     # choose an action based on the state
@@ -240,6 +242,23 @@ class Player:
         values.sort(key=lambda x: x[0], reverse=True)
         action = values[0][1]
         action.append(self.symbol)
+
+        # next_estimations = deepcopy(state.data)
+        # for hash, pos in zip(next_states, next_positions):
+        #     next_estimations[pos[0], pos[1]] = self.estimations[hash]
+        # for i in range(0, BOARD_ROWS):
+        #     print('-------------')
+        #     out = '| '
+        #     for j in range(0, BOARD_COLS):
+        #         token = '%.1f' % next_estimations[i, j]
+        #         if next_estimations[i, j] == 1:
+        #             token = '*'
+        #         if next_estimations[i, j] == -1:
+        #             token = 'x'
+        #         out += token + ' | '
+        #     print(out)
+        # print('-------------')
+
         return action
 
     def save_policy(self):
@@ -283,9 +302,46 @@ class HumanPlayer:
         j = data % BOARD_COLS
         return (i, j, self.symbol)
 
+class RandomPlayer:
+    def __init__(self, **kwagrs):
+        self.symbol = None
+        self.state = None
+        return
+
+    def reset(self):
+        return
+
+    def set_state(self, state):
+        self.state = state
+
+    def set_symbol(self, symbol):
+        self.symbol = symbol
+
+    def backup(self):
+        return
+
+    def act(self):
+        next_positions = []
+        for i in range(BOARD_ROWS):
+            for j in range(BOARD_COLS):
+                if self.state.data[i, j] == 0:
+                    next_positions.append([i, j])
+
+        action = next_positions[np.random.randint(len(next_positions))]
+        action.append(self.symbol)
+        return action
+
+    def save_policy(self):
+        return
+
+    def load_policy(self):
+        return
+
 def train(epochs):
     player1 = Player(epsilon=0.01)
     player2 = Player(epsilon=0.01)
+    # player1 = RandomPlayer()
+    # player2 = RandomPlayer()
     judger = Judger(player1, player2)
     player1_win = 0.0
     player2_win = 0.0
