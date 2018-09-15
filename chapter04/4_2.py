@@ -9,9 +9,9 @@ def expected_return(state, state_value):
 	idx = state[0] * N + state[1]
 
 	if idx == -13:
-		returns = 0.25 * (state_value[3,0] + state_value[3,1] + state_value[3,2] + state_value[3,3])
-	# elif idx == 13:
-	# 	returns = -1 + 0.25 * (state_value[3,0] + state_value[2,1] + state_value[3,2] + state_value[3,3])
+		returns += 0.25 * (state_value[3,0] + state_value[3,1] + state_value[3,2] + state_value[3,3])
+	elif idx == 13:
+		returns += 0.25 * (state_value[3,0] + state_value[2,1] + state_value[3,2] + state_value[3,3])
 	else:
 		for i in range(4):
 			nx = state[0] + d[i * 2]
@@ -19,7 +19,7 @@ def expected_return(state, state_value):
 			nidx = nx * N + ny
 			if nidx == 0 or nidx == 15: 
 				None
-			elif nx >= 0 and nx < N and ny >=0 and ny < N:
+			elif nx >= 0 and nx < N and ny >= 0 and ny < N:
 				returns += 0.25 * state_value[nx, ny]
 			else:
 				returns += 0.25 * state_value[state[0], state[1]]
@@ -28,7 +28,9 @@ def expected_return(state, state_value):
 
 value = np.zeros((N, N))
 
+it = 0
 while True:
+	it += 1
 	new_value = np.copy(value)
 	for i in range(N):
 		for j in range(N):
@@ -47,5 +49,7 @@ while True:
 
 for i in range(N):
 	for j in range(N):
-		print('%d ' % value[i, j])
+		print('%.2f ' % value[i, j])
 	print('\n')
+
+print("Iteration %d" % it)
