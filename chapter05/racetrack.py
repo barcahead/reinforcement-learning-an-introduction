@@ -76,7 +76,7 @@ MAX_SPEED = 5
 
 ACTIONS = [0, -1, 1]
 
-def run(m, pi, starting_points):
+def run(m, pi, starting_points, greedy = False):
 	# trajectory (state, action, reward)
 	width = len(m)
 	height = len(m[0]) 
@@ -88,8 +88,11 @@ def run(m, pi, starting_points):
 	trajectory = []
 
 	while True:
-		print(pi[x][y][vx][vy])
-		action_id = np.random.choice(9, p = pi[x][y][vx][vy])
+		# print(pi[x][y][vx][vy])
+		if greedy:
+			action_id = np.argmax(pi[x][y][vx][vy])
+		else:
+			action_id = np.random.choice(9, p = pi[x][y][vx][vy])
 		# t = ((x, y, vx, vy), action_id)
 		# print(t)
 		trajectory.append(((x, y, vx, vy), action_id))
@@ -118,7 +121,7 @@ def monte_carlo_control_on_policy(m, episodes):
 	# pi (state, action)
 	width = len(m) 
 	height = len(m[0])
-	q = np.zeros((width, height, MAX_SPEED + 1, MAX_SPEED + 1, 9))
+	q = (np.random.rand(width, height, MAX_SPEED + 1, MAX_SPEED + 1, 9) + 1) * -100000000
 	pi = np.zeros(q.shape)
 	returns = np.zeros(q.shape)
 	returns_count = np.zeros(q.shape)
@@ -169,6 +172,10 @@ def monte_carlo_control_on_policy(m, episodes):
 			q[x][y][vx][vy][action]	= returns[x][y][vx][vy][action]
 
 			max_action = np.argmax(q[x][y][vx][vy])
+
+			if q[x][y][vx][vy][max_action] == 0:
+				continue
+
 			action_num = np.count_nonzero(pi[x][y][vx][vy])
 			for i, a in enumerate(pi[x][y][vx][vy]):
 				if i == max_action:
@@ -179,4 +186,16 @@ def monte_carlo_control_on_policy(m, episodes):
 
 		print(len(trajectory))
 
-monte_carlo_control_on_policy(M1, 2)
+	# display one path from start to finish line
+	trajectory = run(m, pi, starting_points, True)
+	m_final = m.copy()
+	for (x, y, _, _), _ in trajectory:
+		m_final[x]= m_final[x][:y] + 'P' + m_final[x][y+1:]
+	for x in range(width):
+		print(m_final[x])
+
+
+monte_carlo_control_on_policy(M1, 1000)
+monte_carlo_control_on_policy(M2, 10000)
+
+
